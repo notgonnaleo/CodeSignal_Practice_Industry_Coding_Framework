@@ -1,0 +1,117 @@
+#pragma warning disable
+using System;
+using System.IO;
+using System.CodeDom.Compiler;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Net;
+using System.Net.Http;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Web;
+
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Text.Json;
+
+public class Solution
+{
+    public static Dictionary<string, int> _storage = new Dictionary<string, int>();
+    
+    
+    public static void Main()
+    {
+        // Seed data example.
+        FileUpload("leo", 1);
+        FileUpload("link", 1);
+        FileUpload("zelda", 2);
+        FileUpload("mario", 3);
+        FileUpload("zorro", 5);
+        FileUpload("monster", 6);
+        
+        //FileCopy("leo", "zelda");
+        
+        // Validates FileUpload edge case (If a file with the same name already exists)
+        //FileUpload("leo", 1); 
+        
+        // (Validates Returns the size of the file, or nothing if the file doesn’t exist.)
+        //Console.WriteLine(FileGet("asd")); 
+        
+        // Validate all items on dictionary
+        // Validates copy also.
+        /*
+        foreach (string key in _storage.Keys)
+        {
+            var keyValue = _storage[key];
+            Console.WriteLine($"Key: {key} | Value: {keyValue}", keyValue);
+        }
+        */
+        
+        var kvs = FileSearch("monster");
+        foreach (var kv in kvs)
+        {
+            Console.WriteLine($"{kv}", kv);
+        }
+    }
+    
+    public static void FileUpload(string name, int size)
+    {        
+        if(_storage.TryGetValue(name, out int currentSize))
+            throw new InvalidOperationException();
+        
+        _storage[name] = size;
+    }
+    
+    public static int? FileGet(string name) 
+    {        
+        if(_storage.TryGetValue(name, out int size))
+            return _storage[name];
+         
+        return null;
+    }
+    
+    public static void FileCopy(string source, string destination)
+    {
+        if (!_storage.TryGetValue(source, out int sourceSize))
+            throw new InvalidOperationException();
+
+        _storage[destination] = sourceSize;
+    }
+    
+    public static List<KeyValuePair<string, int>> FileSearch(string prefix) 
+    {   
+        return _storage
+            .Where(kv => kv.Key.StartsWith(prefix))
+            .OrderByDescending(kv => kv.Value)
+            .ThenBy(kv => kv.Key)
+            .Take(10)
+            .ToList();
+    }
+}
+
+
+
+/* 
+FILE_SEARCH(prefix)
+Find top 10 files starting with the provided prefix. 
+Order results by their size in descending order, 
+and in case of a tie by file name.
+
+Lvl - 1
+FILE_UPLOAD(file_name, size)
+Upload the file to the remote storage server.
+If a file with the same name already exists on the server, it throws a runtime exception.
+
+FILE_GET(file_name)
+Returns the size of the file, or nothing if the file doesn’t exist.
+
+FILE_COPY(source, dest)
+Copy the source file to a new location.
+If the source file doesn’t exist, it throws a runtime exception.
+If the destination file already exists, it overwrites the existing file.
+*/
